@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Моя зарплата — Bonjour cafe</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050403;--glass:rgba(24,19,10,.6);--glass2:rgba(36,29,14,.6);--line:rgba(212,175,55,.16);
+  --text:#f5ecd7;--muted:#a8987a;--cyan:#e6c35c;--violet:#b8862b;--pink:#8a6420;
+  --green:#7fd8a0;--red:#ff7a6b;--grad:linear-gradient(110deg,#7a5418,#c9982e 20%,#f3d77a 38%,#fff6d0 50%,#f3d77a 62%,#c9982e 80%,#7a5418);
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;color:var(--text);min-height:100vh;
+  font:15px/1.4 "Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:calc(16px + var(--top-inset,0px)) 14px 104px;max-width:560px;margin:0 auto;position:relative}
+body::before{content:"";position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(600px 380px at 85% -5%,rgba(184,134,43,.35),transparent 60%),
+    radial-gradient(520px 360px at -10% 30%,rgba(212,175,55,.22),transparent 60%),
+    radial-gradient(500px 400px at 110% 90%,rgba(138,100,32,.16),transparent 60%),var(--bg)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(212,175,55,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.06) 1px,transparent 1px);
+  background-size:28px 28px;
+  -webkit-mask-image:linear-gradient(to bottom,#000,transparent 75%);mask-image:linear-gradient(to bottom,#000,transparent 75%)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select{font:inherit;color:var(--text);background:rgba(8,7,4,.75);border:1px solid var(--line);
+  border-radius:14px;padding:13px 14px;width:100%;outline:none;transition:.2s;color-scheme:dark}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(212,175,55,.15),0 0 18px rgba(212,175,55,.25)}
+#fAmt{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:.5px}
+
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{font-weight:700;font-size:19px;letter-spacing:.3px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand small{display:block;font-weight:500;font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  -webkit-text-fill-color:var(--muted);margin-top:2px}
+.icon-btn{width:42px;height:42px;border-radius:14px;background:var(--glass);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:18px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:.2s}
+.icon-btn:active{transform:scale(.92);border-color:var(--cyan);box-shadow:0 0 16px rgba(212,175,55,.35)}
+
+.period{display:flex;align-items:center;justify-content:space-between;background:var(--glass);border:1px solid var(--line);
+  border-radius:18px;padding:6px;margin-bottom:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.period b{font-weight:600;letter-spacing:.3px}
+.period .icon-btn{background:rgba(8,7,4,.6);font-size:22px;color:var(--cyan)}
+
+.sum{position:relative;border-radius:24px;padding:18px 18px 12px;margin-bottom:16px;overflow:hidden;
+  background:linear-gradient(160deg,rgba(38,30,14,.85),rgba(10,8,5,.92));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.sum::before{content:"";position:absolute;inset:0;border-radius:24px;padding:1.5px;background:var(--grad);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  background-size:250% 250%;animation:flow 5s ease-in-out infinite alternate}
+.sum::after{content:"";position:absolute;width:220px;height:220px;right:-70px;top:-90px;border-radius:50%;
+  background:radial-gradient(circle,rgba(184,134,43,.45),transparent 70%);pointer-events:none}
+@keyframes flow{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+.sum .lbl{color:var(--muted);font-size:11px;letter-spacing:2.5px;text-transform:uppercase}
+.sum .big{font-family:var(--mono);font-size:36px;font-weight:700;letter-spacing:-.5px;margin:4px 0 14px;
+  color:#fff3cf;text-shadow:0 0 16px rgba(212,175,55,.5),0 0 36px rgba(184,134,43,.3)}
+.rows .r{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.rows .r:first-child{border-top:0}
+.rows .r span:first-child{color:var(--muted)}
+.rows .r span:last-child{font-family:var(--mono);font-weight:500;font-size:13.5px}
+.plus{color:var(--green)!important;text-shadow:0 0 10px rgba(127,216,160,.35)}
+.minus{color:var(--red)!important;text-shadow:0 0 10px rgba(255,92,122,.35)}
+
+h3{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:3px;margin:20px 4px 10px;
+  display:flex;align-items:center;gap:10px}
+h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+.day{background:var(--glass);border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.day-h{display:flex;justify-content:space-between;padding:11px 14px 5px;font-size:12px;color:var(--muted);letter-spacing:.4px}
+.day-h span:last-child{font-family:var(--mono);color:var(--cyan)}
+.item{display:flex;align-items:center;gap:12px;padding:10px 14px;width:100%;text-align:left;transition:background .15s}
+.item:active{background:rgba(212,175,55,.08)}
+.item+.item{border-top:1px solid var(--line)}
+.dot{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:16px;flex:none;border:1px solid}
+.t-s .dot{background:rgba(212,175,55,.1);border-color:rgba(212,175,55,.45);box-shadow:0 0 14px rgba(212,175,55,.25)}
+.t-a .dot{background:rgba(184,134,43,.12);border-color:rgba(184,134,43,.5);box-shadow:0 0 14px rgba(184,134,43,.25)}
+.t-f .dot{background:rgba(255,92,122,.1);border-color:rgba(255,92,122,.5);box-shadow:0 0 14px rgba(255,92,122,.25)}
+.t-b .dot{background:rgba(127,216,160,.1);border-color:rgba(127,216,160,.5);box-shadow:0 0 14px rgba(127,216,160,.25)}
+.item .mid{flex:1;min-width:0}
+.item .mid div:first-child{font-weight:600}
+.item .mid div:last-child{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .val{text-align:right;font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap}
+.item .val small{display:block;font-weight:500;font-size:11.5px;color:var(--green);text-shadow:0 0 10px rgba(127,216,160,.4)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:5px;margin-bottom:14px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.tabs button{padding:11px 4px;border-radius:13px;font-weight:600;color:var(--muted);transition:.25s}
+.tabs button.on{color:#1a1206;background:var(--grad);background-size:250% 100%;background-position:50% 50%;box-shadow:0 4px 16px rgba(212,175,55,.3)}
+.tabs{grid-template-columns:1fr 1fr 1fr!important}
+.tabs button{font-size:14px}
+.seg.seg3{grid-template-columns:1fr 1fr 1fr}
+.chart-card{position:relative;border-radius:24px;padding:16px 12px 12px;margin-bottom:16px;border:1px solid rgba(212,175,55,.35);
+  background:linear-gradient(160deg,rgba(38,30,14,.85),rgba(10,8,5,.92));box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.ch-head{padding:0 6px 8px}
+.ch-head .lbl{color:var(--muted);font-size:11px;letter-spacing:2.5px;text-transform:uppercase}
+.ch-head .big2{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff3cf;margin:4px 0 2px;text-shadow:0 0 16px rgba(212,175,55,.45)}
+.ch-head .delta{font-size:13px;color:var(--muted)}
+#chart svg{display:block;width:100%;height:auto;touch-action:manipulation}
+.ch-info{margin:8px 6px 0;padding:10px 12px;border-radius:12px;background:rgba(8,7,4,.6);border:1px solid var(--line);font-size:13px;color:var(--muted);min-height:40px}
+.ch-info b{font-family:var(--mono);color:#fff3cf}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 6px 0;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hrs-badge{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:10px;font-family:var(--mono);font-size:13px;
+  color:#fff3cf;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.35)}
+/* удобный ввод */
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left;min-height:48px}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;min-height:48px}
+.sheet input{font-size:16px} /* без авто-зума в iOS */
+#fAmt{font-size:26px!important;padding:14px 16px}
+.date-row{display:grid;grid-template-columns:auto auto 1fr;gap:6px}
+.chip{background:rgba(8,7,4,.6);border:1px solid var(--line);border-radius:12px;padding:0 14px;min-height:48px;font-size:14px;transition:.2s;white-space:nowrap}
+.chip.on{border-color:var(--cyan);color:#fff3cf;background:rgba(212,175,55,.12);box-shadow:0 0 14px rgba(212,175,55,.25)}
+.quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.quick .chip{min-height:38px;padding:0 12px;font-family:var(--mono);font-size:13px}
+.chk{display:flex!important;align-items:center;gap:10px;margin:2px 2px 0!important;text-transform:none!important;letter-spacing:0!important;
+  font-size:14px!important;color:var(--text)!important;cursor:pointer;min-height:44px}
+.chk input{position:absolute;opacity:0;width:0;height:0}
+.chk .box{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--cyan);display:grid;place-items:center;flex:none;transition:.2s}
+.chk .box::after{content:"";width:6px;height:11px;border:solid #1a1206;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px);opacity:0}
+.chk input:checked + .box{background:var(--grad);background-size:250% 100%;background-position:50% 50%;border-color:transparent;box-shadow:0 0 12px rgba(212,175,55,.4)}
+.chk input:checked + .box::after{opacity:1}
+.chk b{font-family:var(--mono);color:var(--cyan);font-weight:700}
+.chk small{color:var(--muted)}
+.stepper{display:grid;grid-template-columns:56px 1fr 56px;gap:8px;margin-top:6px;align-items:center}
+.stepper button{height:52px;border-radius:14px;background:rgba(8,7,4,.6);border:1px solid var(--line);font-size:26px;color:var(--cyan);transition:.15s}
+.stepper button:active{transform:scale(.94);border-color:var(--cyan)}
+.stepper div{text-align:center;font-family:var(--mono);font-size:24px;font-weight:700;color:#fff3cf}
+.link{color:var(--cyan);font-size:14px;padding:12px 2px 0;display:inline-block}
+.sheet .btns{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));margin:16px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(8,7,4,1) 70%,rgba(8,7,4,0));z-index:2}
+/* своя цифровая клавиатура */
+.kpf{cursor:pointer;caret-color:transparent;-webkit-user-select:none;user-select:none}
+.kpf.active{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(212,175,55,.15),0 0 18px rgba(212,175,55,.3)!important}
+.kp{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));margin:16px -16px 0;z-index:3;
+  padding:10px 10px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(26,20,10,.98),rgba(8,7,4,1));
+  border-top:1px solid rgba(212,175,55,.3);box-shadow:0 -12px 30px rgba(0,0,0,.6);animation:up .2s ease}
+.kp-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:2px 6px 10px;font-size:12px;color:var(--muted);
+  letter-spacing:1px;text-transform:uppercase}
+.kp-top b{font-family:var(--mono);font-size:15px;color:#fff3cf;letter-spacing:0;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kp-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:54px;gap:7px}
+.kp-grid button{border-radius:14px;background:rgba(40,32,16,.75);border:1px solid rgba(212,175,55,.14);font-family:var(--mono);
+  font-size:24px;font-weight:600;color:var(--text);transition:transform .08s,background .08s;touch-action:manipulation}
+.kp-grid button:active{transform:scale(.94);background:rgba(212,175,55,.22)}
+.kp-grid .fn{color:var(--cyan);background:rgba(8,7,4,.7)}
+.kp-grid .ok{grid-row:span 2;font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:700;color:#1a1206;
+  background:var(--grad);background-size:250% 100%;background-position:50% 50%;border:0;box-shadow:0 6px 18px rgba(212,175,55,.35)}
+.sheet.kp-on{scroll-padding-bottom:320px}
+.t-t .dot{background:rgba(127,216,160,.1);border-color:rgba(127,216,160,.5);box-shadow:0 0 14px rgba(127,216,160,.22)}
+.empty{color:var(--muted);text-align:center;padding:34px 14px;background:var(--glass);border:1px dashed var(--line);border-radius:18px}
+
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom));
+  width:calc(100% - 28px);max-width:532px;background:var(--grad);background-size:250% 100%;color:#1a1206;font-weight:700;
+  padding:16px;border-radius:18px;font-size:16px;letter-spacing:.5px;animation:flow 4s ease-in-out infinite alternate;
+  box-shadow:0 10px 30px rgba(184,134,43,.45),0 0 24px rgba(212,175,55,.3);transition:transform .15s}
+.fab:active{transform:translateX(-50%) scale(.97)}
+
+.shade{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);background:rgba(2,3,10,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:none;align-items:flex-end;justify-content:center;z-index:10}
+.shade.on{display:flex}
+.sheet{position:relative;background:linear-gradient(170deg,rgba(32,25,12,.97),rgba(8,7,4,.99));width:100%;max-width:560px;
+  border-radius:26px 26px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:calc(var(--vvh,100vh) - var(--top-inset,0px) - 10px);overflow:auto;overscroll-behavior:contain;
+  border-top:1px solid rgba(212,175,55,.35);box-shadow:0 -10px 40px rgba(184,134,43,.25);animation:up .28s cubic-bezier(.2,.9,.3,1)}
+.sheet::before{content:"";display:block;width:42px;height:4px;border-radius:4px;background:var(--line);margin:-6px auto 12px}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{margin:2px 0 14px;font-size:19px;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.seg button{background:rgba(8,7,4,.6);border:1px solid var(--line);border-radius:14px;padding:10px 2px;font-size:12.5px;transition:.2s}
+.seg button.on{border-color:var(--cyan);color:#fff;background:rgba(212,175,55,.12);box-shadow:0 0 16px rgba(212,175,55,.3),inset 0 0 12px rgba(212,175,55,.12)}
+.seg2{grid-template-columns:1fr 1fr}
+label{display:block;font-size:11px;color:var(--muted);margin:12px 2px 6px;letter-spacing:1.5px;text-transform:uppercase}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 2px 0;line-height:1.5}
+.btns{display:flex;gap:8px;margin-top:18px}
+.btn{flex:1;padding:15px;border-radius:16px;font-weight:700;background:var(--grad);background-size:250% 100%;background-position:50% 50%;color:#1a1206;box-shadow:0 8px 22px rgba(184,134,43,.35)}
+.btn.ghost{color:var(--text);background:rgba(8,7,4,.6);border:1px solid var(--line);box-shadow:none}
+.btn.del{background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.45);color:var(--red);flex:none;padding:15px 18px;box-shadow:none}
+.preview{background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:11px 13px;margin-top:12px;font-size:13.5px;color:var(--muted);line-height:1.55}
+.preview b{color:var(--green);font-family:var(--mono);text-shadow:0 0 10px rgba(127,216,160,.4)}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(18,14,7,.95);
+  border:1px solid rgba(212,175,55,.4);padding:10px 16px;border-radius:14px;font-size:14px;opacity:0;transition:.25s;
+  pointer-events:none;z-index:20;box-shadow:0 0 20px rgba(212,175,55,.25)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">Моя зарплата<small>Bonjour cafe</small></div>
+  <button class="icon-btn" id="btnSettings" aria-label="Настройки"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e6c35c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div>
+
+<div class="period">
+  <button class="icon-btn" id="prev">‹</button>
+  <b id="periodLbl"></b>
+  <button class="icon-btn" id="next">›</button>
+</div>
+
+<div class="tabs" id="tabs">
+  <button data-tab="zp" class="on">💼 Зарплата</button>
+  <button data-tab="tips">🪙 Чаевые</button>
+  <button data-tab="trend">📈 Тренд</button>
+</div>
+
+<div id="trendView" style="display:none">
+  <div class="seg seg3" id="chMode">
+    <button data-c="zp" class="on">Зарплата</button>
+    <button data-c="tips">Чаевые</button>
+    <button data-c="both">Вместе</button>
+  </div>
+  <div class="seg seg2" id="chRange">
+    <button data-r="days" class="on">По дням</button>
+    <button data-r="months">По месяцам</button>
+  </div>
+  <div class="chart-card">
+    <div class="ch-head"><div class="lbl" id="chLbl"></div><div class="big2" id="chBig"></div><div class="delta" id="chDelta"></div></div>
+    <div id="chart"></div>
+    <div class="legend" id="chLegend"></div>
+    <div class="ch-info" id="chInfo"></div>
+  </div>
+</div>
+
+<div class="sum" id="sumCard">
+  <div class="lbl" id="sumLbl">К выплате за период</div>
+  <div class="big" id="total">0</div>
+  <div class="rows" id="rows"></div>
+</div>
+
+<h3 id="listHead">Записи</h3>
+<div id="list"></div>
+
+<button class="fab" id="btnAdd">＋ Новая запись</button>
+
+<!-- Форма записи -->
+<div class="shade" id="shEntry">
+  <div class="sheet">
+    <h2 id="entryTitle">Новая запись</h2>
+    <div class="seg" id="typeSeg">
+      <button data-t="s">☕ Касса</button>
+      <button data-t="a">💵 Аванс</button>
+      <button data-t="f">⚠️ Штраф</button>
+      <button data-t="b">🎁 Премия</button>
+    </div>
+    <label id="amtLbl">Касса за смену, лей</label>
+    <input type="text" inputmode="none" readonly class="kpf" id="fAmt" placeholder="0" autocomplete="off">
+    <div class="preview" id="preview"></div>
+
+    <label>Дата</label>
+    <div class="date-row">
+      <button type="button" class="chip" data-dd="0">Сегодня</button>
+      <button type="button" class="chip" data-dd="1">Вчера</button>
+      <input type="date" id="fDate">
+    </div>
+
+    <div id="hrsWrap">
+      <label>Часы за смену</label>
+      <label class="chk"><input type="checkbox" id="fHrsDef" checked><span class="box"></span>
+        <span id="fHrsDefTxt">По умолчанию</span></label>
+      <div class="stepper" id="hrsStep">
+        <button type="button" data-h="-0.5">−</button>
+        <div id="fHrsVal">12 ч</div>
+        <button type="button" data-h="0.5">+</button>
+      </div>
+    </div>
+
+    <div id="tipWrap">
+      <label>Чаевые за смену, лей</label>
+      <input type="text" inputmode="none" readonly class="kpf" id="fTip" placeholder="0" autocomplete="off">
+      <div class="quick" id="tipQuick">
+        <button type="button" class="chip" data-a="10">+10</button>
+        <button type="button" class="chip" data-a="20">+20</button>
+        <button type="button" class="chip" data-a="50">+50</button>
+        <button type="button" class="chip" data-a="100">+100</button>
+        <button type="button" class="chip" data-a="0">✕</button>
+      </div>
+    </div>
+
+    <button type="button" class="link" id="comToggle">＋ Комментарий</button>
+    <div id="comWrap" style="display:none">
+      <input type="text" id="fCom" maxlength="40" placeholder="Например: банкет, опоздание…" style="margin-top:8px">
+    </div>
+    <div class="kp" id="kp" style="display:none">
+      <div class="kp-top"><span id="kpName"></span><b id="kpVal"></b></div>
+      <div class="kp-grid">
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="del" class="fn">⌫</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="+" class="fn">+</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="ok" class="ok">Готово</button>
+        <button data-k="," class="fn">,</button><button data-k="0">0</button><button data-k="00">00</button>
+      </div>
+    </div>
+    <div class="btns" id="fBtns">
+      <button class="btn del" id="fDel">🗑</button>
+      <button class="btn ghost" id="fCancel">Отмена</button>
+      <button class="btn" id="fSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Настройки -->
+<div class="shade" id="shSet">
+  <div class="sheet">
+    <h2>Настройки</h2>
+    <div class="hint">Зарплата за смену считается по шкале кафе: от кассы 3 500 лей — 420 лей, дальше по ступеням до 127 000 лей — 2 730 лей. Премии прибавляются, авансы и штрафы вычитаются.</div>
+    <label>Рабочее время смены</label>
+    <div class="row2">
+      <div><div class="hint" style="margin:0 2px 6px">Начало</div><input type="time" id="sStart"></div>
+      <div><div class="hint" style="margin:0 2px 6px">Конец</div><input type="time" id="sEnd"></div>
+    </div>
+    <div class="hrs-badge" id="sHrs">—</div>
+    <div class="hint">По этим часам считается цена твоего рабочего часа. Если какая-то смена была короче или длиннее, часы можно поменять прямо в записи о кассе.</div>
+    <label>Период расчёта</label>
+    <div class="seg seg2" id="perSeg">
+      <button data-p="month">Месяц</button>
+      <button data-p="half">2 раза в месяц</button>
+    </div>
+    <div class="hint">«2 раза в месяц» — с 1 по 15 и с 16 до конца месяца.</div>
+    <div class="btns">
+      <button class="btn ghost" id="sCancel">Отмена</button>
+      <button class="btn" id="sSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+var useCloud = !!(TG && TG.initData && TG.CloudStorage && TG.isVersionAtLeast && TG.isVersionAtLeast("6.9"));
+if (TG) { try { TG.ready(); TG.expand(); TG.setHeaderColor("#050403"); TG.setBackgroundColor("#050403"); } catch(e){} }
+if (TG) { try { if (TG.isVersionAtLeast("7.7")) TG.disableVerticalSwipes(); } catch(e){} }
+// Отступ сверху под кнопки Telegram в полноэкранном режиме
+function setInsets(){
+  var top=0;
+  try { if (TG){ top=((TG.safeAreaInset&&TG.safeAreaInset.top)||0)+((TG.contentSafeAreaInset&&TG.contentSafeAreaInset.top)||0); } } catch(e){}
+  document.documentElement.style.setProperty("--top-inset", top+"px");
+}
+// Видимая область экрана (без клавиатуры)
+function setVV(){
+  var vv=window.visualViewport;
+  document.documentElement.style.setProperty("--vvh", (vv?vv.height:window.innerHeight)+"px");
+  document.documentElement.style.setProperty("--vvt", (vv?vv.offsetTop:0)+"px");
+}
+setInsets(); setVV();
+if (window.visualViewport){ visualViewport.addEventListener("resize",setVV); visualViewport.addEventListener("scroll",setVV); }
+window.addEventListener("resize",setVV);
+if (TG && TG.onEvent){ ["safeAreaChanged","contentSafeAreaChanged","fullscreenChanged","viewportChanged"].forEach(function(ev){ try { TG.onEvent(ev,function(){ setInsets(); setVV(); }); } catch(e){} }); }
+
+/* ---------- хранилище: облако Telegram, иначе память браузера ---------- */
+function lsGet(k){ try { return localStorage.getItem("zp_"+k); } catch(e){ return null; } }
+function lsSet(k,v){ try { localStorage.setItem("zp_"+k,v); } catch(e){} }
+function lsKeys(){ var out=[]; try { for (var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if (k.indexOf("zp_")===0) out.push(k.slice(3)); } } catch(e){} return out; }
+var ready=false, loadFailed=false;
+var store = {
+  keys: function(){ return new Promise(function(res){
+    if (!useCloud) return res(lsKeys());
+    TG.CloudStorage.getKeys(function(err,keys){ if (err) loadFailed=true; res(err ? lsKeys() : keys); });
+  });},
+  getMany: function(keys){ return new Promise(function(res){
+    if (!keys.length) return res({});
+    if (!useCloud){ var o={}; keys.forEach(function(k){ o[k]=lsGet(k); }); return res(o); }
+    TG.CloudStorage.getItems(keys, function(err,vals){
+      if (err){ loadFailed=true; var o={}; keys.forEach(function(k){ o[k]=lsGet(k); }); return res(o); }
+      res(vals);
+    });
+  });},
+  set: function(k,v){ lsSet(k,v); return new Promise(function(res){
+    if (!useCloud) return res();
+    TG.CloudStorage.setItem(k, v, function(err){ if (err) toast("Не удалось сохранить в облако"); res(); });
+  });}
+};
+
+/* ---------- данные ---------- */
+// Настройки
+var S = { period:"month", start:"", end:"" };
+// Записи по месяцам: "2026-11" -> [[день, тип, сумма, комментарий], ...]
+// типы: s — касса (смена), a — аванс, f — штраф, b — премия
+var M = {};
+
+var TYPES = {
+  s:{ name:"Смена", icon:"☕", amt:"Касса за смену, лей" },
+  a:{ name:"Аванс", icon:"💵", amt:"Сумма аванса, лей" },
+  f:{ name:"Штраф", icon:"⚠️", amt:"Сумма штрафа, лей" },
+  b:{ name:"Премия", icon:"🎁", amt:"Сумма премии, лей" },
+  t:{ name:"Чаевые", icon:"🪙", amt:"Чаевые за смену, лей" }
+};
+var MONTHS = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+var MONTHS_G = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+var WD = ["вс","пн","вт","ср","чт","пт","сб"];
+
+function pad(n){ return (n<10?"0":"")+n; }
+function mk(y,m){ return y+"-"+pad(m); }
+function skey(monthKey){ return "m"+monthKey.replace("-","_"); }
+function num(s){
+  return String(s).replace(/\s/g,"").split("+").reduce(function(acc,part){
+    var v=parseFloat(part.replace(",",".")); return acc+(isFinite(v)?v:0); },0);
+}
+function money(v){ v=Math.round(v*100)/100; return v.toLocaleString("ru-RU",{maximumFractionDigits:2})+" лей"; }
+function daysIn(y,m){ return new Date(y,m,0).getDate(); }
+// Шкала Bonjour cafe: [касса от, зарплата за смену]
+var SCALE = [[3500,420],[5000,455],[6000,525],[7000,595],[8000,648],[9000,700],[10000,735],
+  [11000,770],[12000,805],[13000,840],[14000,875],[15000,910],[16000,945],[17000,980],[18000,1015],
+  [19000,1050],[20000,1085],[21000,1120],[22000,1155],[23000,1190],[24000,1225],[25000,1260],
+  [26000,1295],[27000,1330],[28000,1365],[29000,1400],[30000,1435],[31000,1470],[32000,1505],
+  [33000,1540],[34000,1575],[35000,1610],[36000,1645],[38000,1680],[40000,1715],[43000,1750],
+  [46000,1785],[49000,1820],[52000,1855],[55000,1890],[58000,1925],[61000,1960],[64000,1995],
+  [67000,2030],[70000,2065],[73000,2100],[76000,2135],[79000,2170],[82000,2205],[85000,2240],
+  [88000,2275],[91000,2310],[94000,2345],[97000,2380],[100000,2415],[103000,2450],[106000,2485],
+  [109000,2520],[112000,2555],[115000,2590],[118000,2625],[121000,2660],[124000,2695],[127000,2730]];
+function tier(kassa){
+  // выше 127k шкала продолжается тем же шагом: +35 лей за каждые 3 000
+  if (kassa>=127000){ var k=Math.floor((kassa-127000)/3000); return {pay:2730+35*k, next:130000+3000*k, nextPay:2765+35*k}; }
+  var pay=420, i=1; // меньше 3 500 — тоже 420 (минимум)
+  while (i<SCALE.length && kassa>=SCALE[i][0]){ pay=SCALE[i][1]; i++; }
+  return {pay:pay, next:SCALE[i][0], nextPay:SCALE[i][1]};
+}
+function shiftPay(kassa){ return tier(kassa).pay; }
+// Рабочие часы
+function spanHours(a,b){
+  if (!a || !b) return 0;
+  var p=a.split(":"), q=b.split(":"), m=(+q[0]*60+ +q[1])-(+p[0]*60+ +p[1]);
+  if (m<=0) m+=1440; // смена через полночь
+  return m/60;
+}
+function stdHours(){ return spanHours(S.start,S.end); }
+function hoursOf(e){ return (e[1]==="s") ? (e[4]>0 ? e[4] : stdHours()) : 0; }
+function fmtH(h){ return String(Math.round(h*10)/10).replace(".",",")+" ч"; }
+function perH(v,h){ return money(v/h)+"/ч"; }
+
+var today = new Date();
+var cur = { y:today.getFullYear(), m:today.getMonth()+1, h: today.getDate()<=15?1:2 };
+
+function saveMonth(key){
+  var v=JSON.stringify(M[key]||[]);
+  if (v.length>4000) toast("Слишком много записей за месяц для облака — сократи комментарии");
+  return store.set(skey(key), v);
+}
+
+/* ---------- период ---------- */
+function periodRange(){
+  if (S.period==="half") return cur.h===1 ? [1,15] : [16, daysIn(cur.y,cur.m)];
+  return [1, daysIn(cur.y,cur.m)];
+}
+function periodLabel(){
+  var r=periodRange();
+  if (S.period==="half") return r[0]+"–"+r[1]+" "+MONTHS_G[cur.m-1]+" "+cur.y;
+  var n=MONTHS[cur.m-1]; return n[0].toUpperCase()+n.slice(1)+" "+cur.y;
+}
+function move(dir){
+  if (S.period==="half"){
+    cur.h+=dir;
+    if (cur.h>2){ cur.h=1; cur.m++; }
+    if (cur.h<1){ cur.h=2; cur.m--; }
+  } else cur.m+=dir;
+  if (cur.m>12){ cur.m=1; cur.y++; }
+  if (cur.m<1){ cur.m=12; cur.y--; }
+  render();
+}
+
+/* ---------- отрисовка ---------- */
+var tab="zp";
+function render(){
+  document.getElementById("periodLbl").textContent = periodLabel();
+  [].forEach.call(document.querySelectorAll("#tabs button"),function(b){ b.classList.toggle("on", b.dataset.tab===tab); });
+  var isTrend = tab==="trend";
+  document.getElementById("trendView").style.display = isTrend ? "" : "none";
+  ["sumCard","listHead","list"].forEach(function(id){ document.getElementById(id).style.display = isTrend ? "none" : ""; });
+  if (isTrend){ renderTrend(); return; }
+  var key=mk(cur.y,cur.m), all=M[key]||[], r=periodRange();
+  var inPer=[];
+  all.forEach(function(e,i){ if (e[0]>=r[0] && e[0]<=r[1]) inPer.push({e:e,i:i}); });
+
+  var t={shifts:0,kassa:0,earned:0,bonus:0,adv:0,fine:0,tips:0,tipDays:{},hours:0,hShifts:0,hPay:0};
+  inPer.forEach(function(x){ var e=x.e;
+    if (e[1]==="s"){ t.shifts++; t.kassa+=e[2]; t.earned+=shiftPay(e[2]);
+      var h=hoursOf(e); if (h){ t.hours+=h; t.hShifts++; t.hPay+=shiftPay(e[2]); } }
+    else if (e[1]==="b") t.bonus+=e[2];
+    else if (e[1]==="a") t.adv+=e[2];
+    else if (e[1]==="f") t.fine+=e[2];
+    else if (e[1]==="t"){ t.tips+=e[2]; t.tipDays[e[0]]=(t.tipDays[e[0]]||0)+e[2]; }
+  });
+  var total=t.earned+t.bonus-t.adv-t.fine;
+  var allH = t.hours>0 && t.hShifts===t.shifts;            // часы известны у всех смен
+  var hourPay = allH ? t.earned+t.bonus-t.fine : t.hPay;     // иначе — только смены с часами
+  var items=inPer.filter(function(x){ return tab==="tips" ? x.e[1]==="t" : x.e[1]!=="t"; });
+
+  if (tab==="zp"){
+    document.getElementById("sumLbl").textContent="К выплате за период";
+    document.getElementById("total").textContent = money(total);
+    document.getElementById("rows").innerHTML =
+      row("Смен", t.shifts) +
+      row("Касса за период", money(t.kassa)) +
+      (t.shifts ? row("Средняя касса", money(t.kassa/t.shifts)) : "") +
+      row("Заработано за смены", money(t.earned), "plus") +
+      (t.bonus ? row("Премии", "+"+money(t.bonus), "plus") : "") +
+      (t.adv ? row("Авансы", "−"+money(t.adv), "minus") : "") +
+      (t.fine ? row("Штрафы", "−"+money(t.fine), "minus") : "") +
+      (t.hours ? row("Часов отработано", fmtH(t.hours)+(allH?"":" <small style=\"color:var(--muted)\">("+t.hShifts+" из "+t.shifts+" смен)</small>")) +
+                 row("Цена часа", perH(hourPay, t.hours), "plus") : "");
+  } else {
+    var days=Object.keys(t.tipDays), best=0;
+    days.forEach(function(d){ if (t.tipDays[d]>best) best=t.tipDays[d]; });
+    document.getElementById("sumLbl").textContent="Чаевые за период";
+    document.getElementById("total").textContent = money(t.tips);
+    document.getElementById("rows").innerHTML =
+      row("Смен с чаевыми", days.length) +
+      (days.length ? row("В среднем за смену", money(t.tips/days.length)) : "") +
+      (days.length ? row("Лучшая смена", money(best), "plus") : "") +
+      row("Зарплата к выплате", money(total)) +
+      row("Всего: зарплата + чаевые", money(total+t.tips), "plus") +
+      (allH && t.tips ? row("Чаевые за час", perH(t.tips, t.hours)) : "") +
+      (allH ? row("Час с чаевыми", perH(t.earned+t.bonus-t.fine+t.tips, t.hours), "plus") : "");
+  }
+
+  var list=document.getElementById("list");
+  if (!items.length){
+    list.innerHTML='<div class="empty">'+(tab==="tips"?"Чаевых за этот период пока нет.":"За этот период пока нет записей.")+
+      '<br>Нажми «Новая запись» внизу.</div>'; return;
+  }
+  items.sort(function(a,b){ return b.e[0]-a.e[0] || a.i-b.i; });
+  var html="", lastDay=null;
+  items.forEach(function(x){
+    var e=x.e;
+    if (e[0]!==lastDay){
+      if (lastDay!==null) html+="</div>";
+      var d=new Date(cur.y,cur.m-1,e[0]), head="";
+      if (tab==="tips") head='<span>за день '+money(t.tipDays[e[0]]||0)+'</span>';
+      else {
+        var dayItems=items.filter(function(z){ return z.e[0]===e[0] && z.e[1]==="s"; });
+        var dayK=dayItems.reduce(function(s,z){ return s+z.e[2]; },0);
+        head = dayItems.length ? '<span>касса '+money(dayK)+'</span>' : '<span></span>';
+      }
+      html+='<div class="day"><div class="day-h"><span>'+e[0]+" "+MONTHS_G[cur.m-1]+", "+WD[d.getDay()]+'</span>'+head+'</div>';
+      lastDay=e[0];
+    }
+    var T=TYPES[e[1]], sign=(e[1]==="a"||e[1]==="f")?"−":((e[1]==="b"||e[1]==="t")?"+":"");
+    var hh = hoursOf(e);
+    var sub = e[1]==="s" ? '<small>+'+money(shiftPay(e[2]))+(hh?' · '+perH(shiftPay(e[2]),hh):'')+'</small>' : "";
+    var desc = e[3] ? esc(e[3]) : (e[1]==="s" ? "касса за смену" : (e[1]==="t" ? "забрал в конце смены" : ""));
+    var cls = sign==="−" ? "minus" : (e[1]==="t" ? "plus" : "");
+    html+='<button class="item t-'+e[1]+'" data-i="'+x.i+'"><div class="dot">'+T.icon+'</div>'+
+          '<div class="mid"><div>'+T.name+'</div><div>'+desc+'</div></div>'+
+          '<div class="val '+cls+'">'+sign+money(e[2])+sub+'</div></button>';
+  });
+  html+="</div>";
+  list.innerHTML=html;
+}
+function row(a,b,c){ return '<div class="r"><span>'+a+'</span><span class="'+(c||"")+'">'+b+'</span></div>'; }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+
+/* ---------- график ---------- */
+var chMode="zp", chRange="days", chData=null;
+var CH_NAMES={zp:"Зарплата", tips:"Чаевые", both:"Зарплата + чаевые"};
+function dayAgg(y,m){
+  var arr=M[mk(y,m)]||[], zp={}, tp={};
+  arr.forEach(function(e){ var d=e[0];
+    if (e[1]==="s") zp[d]=(zp[d]||0)+shiftPay(e[2]);
+    else if (e[1]==="b") zp[d]=(zp[d]||0)+e[2];
+    else if (e[1]==="f") zp[d]=(zp[d]||0)-e[2];
+    else if (e[1]==="t") tp[d]=(tp[d]||0)+e[2];
+  });
+  return {zp:zp,tp:tp};
+}
+function sumObj(o){ var s=0; for (var k in o) s+=o[k]; return s; }
+function niceMax(m){ if (m<=0) return 100; var p=Math.pow(10,Math.floor(Math.log10(m))), f=m/p;
+  return (f<=1?1:f<=2?2:f<=4?4:f<=6?6:f<=8?8:10)*p; }
+function short(v){ return v>=1000 ? String(Math.round(v/100)/10).replace(".",",")+"k" : String(Math.round(v)); }
+
+function renderTrend(){
+  [].forEach.call(document.querySelectorAll("#chMode button"),function(b){ b.classList.toggle("on", b.dataset.c===chMode); });
+  [].forEach.call(document.querySelectorAll("#chRange button"),function(b){ b.classList.toggle("on", b.dataset.r===chRange); });
+  var labels=[], A=[], B=[], full=[], pA=[], pB=[];
+  if (chRange==="days"){
+    var r=periodRange(), g=dayAgg(cur.y,cur.m);
+    for (var d=r[0]; d<=r[1]; d++){
+      labels.push(String(d)); A.push(Math.max(0,g.zp[d]||0)); B.push(g.tp[d]||0);
+      pA.push(d in g.zp); pB.push(d in g.tp);
+      full.push(d+" "+MONTHS_G[cur.m-1]);
+    }
+  } else {
+    for (var k=5; k>=0; k--){
+      var y=cur.y, m=cur.m-k; while (m<1){ m+=12; y--; }
+      var g2=dayAgg(y,m);
+      labels.push(MONTHS[m-1].slice(0,3)); A.push(Math.max(0,sumObj(g2.zp))); B.push(sumObj(g2.tp));
+      pA.push(Object.keys(g2.zp).length>0); pB.push(Object.keys(g2.tp).length>0);
+      full.push(MONTHS[m-1]+" "+y);
+    }
+  }
+  var V=A.map(function(a,i){ return chMode==="zp"?a:(chMode==="tips"?B[i]:a+B[i]); });
+  var pV=pA.map(function(p,i){ return chMode==="zp"?p:(chMode==="tips"?pB[i]:(p||pB[i])); });
+  var ongoing = chRange==="months" && cur.y===today.getFullYear() && cur.m===today.getMonth()+1;
+  chData={labels:labels,A:A,B:B,V:V,full:full,pA:pA,pB:pB,pV:pV,ongoing:ongoing,sel:-1};
+
+  var name=CH_NAMES[chMode], delta="";
+  if (chRange==="days"){
+    var tot=V.reduce(function(s,v){ return s+v; },0), act=pV.filter(Boolean).length;
+    document.getElementById("chLbl").textContent=name+" · "+periodLabel();
+    document.getElementById("chBig").textContent=money(tot);
+    var rr=periodRange(), hrs=0, nS=0, nH=0;
+    (M[mk(cur.y,cur.m)]||[]).forEach(function(e){ if (e[0]>=rr[0] && e[0]<=rr[1] && e[1]==="s"){ nS++; var h=hoursOf(e); if (h){ hrs+=h; nH++; } } });
+    if (nH<nS) hrs=0; // цену часа показываем, только если часы известны у всех смен
+    delta = act ? "В среднем за смену: "+money(tot/act)+" · смен: "+act+(hrs?"<br>Цена часа: "+perH(tot,hrs)+" · часов: "+fmtH(hrs):"") : "За этот период пока нет данных";
+  } else {
+    var now=V[5], prev=V[4];
+    document.getElementById("chLbl").textContent=name+" · "+full[5];
+    document.getElementById("chBig").textContent=money(now);
+    if (prev>0){
+      var pc=Math.round((now-prev)/prev*100);
+      delta = (pc>=0?'<span class="plus">▲ +'+pc+'%</span>':'<span class="minus">▼ '+pc+'%</span>')+" к прошлому месяцу ("+money(prev)+")";
+    } else delta = "Сравнение с прошлым месяцем появится, когда будут данные";
+    if (ongoing && prev>0) delta += '<br><span style="opacity:.8">Месяц ещё идёт — итог вырастет.</span>';
+  }
+  document.getElementById("chDelta").innerHTML=delta;
+  document.getElementById("chart").innerHTML=svgChart();
+  document.getElementById("chInfo").innerHTML = pV.some(Boolean) ? "Нажми на точку, чтобы увидеть сумму" : "Пока нет данных для графика";
+  document.getElementById("chLegend").innerHTML = chSeries().map(function(se){
+    return '<span><i style="background:'+se.c+'"></i>'+se.n+'</span>'; }).join("");
+}
+
+function chSeries(){
+  var d=chData, G="#e6c35c", T="#7fd8a0";
+  if (chMode==="zp") return [{n:"Зарплата", v:d.A, p:d.pA, c:G, id:"z", area:true}];
+  if (chMode==="tips") return [{n:"Чаевые", v:d.B, p:d.pB, c:T, id:"t", area:true}];
+  return [{n:"Всего", v:d.V, p:d.pV, c:"#fff3cf", id:"w", area:true, w:2.6},
+          {n:"Зарплата", v:d.A, p:d.pA, c:G, id:"z"},
+          {n:"Чаевые", v:d.B, p:d.pB, c:T, id:"t"}];
+}
+function svgChart(){
+  var d=chData, labels=d.labels, n=labels.length, ser=chSeries();
+  var W=340,H=220,L=40,R=10,T=14,Bm=24, iw=W-L-R, ih=H-T-Bm;
+  var mx=0; ser.forEach(function(se){ se.v.forEach(function(v,i){ if (se.p[i] && v>mx) mx=v; }); });
+  var nice=niceMax(mx*1.05);
+  var step = n>1 ? iw/(n-1) : 0;
+  function X(i){ return n>1 ? L+step*i : L+iw/2; }
+  function Y(v){ return T+ih-(Math.max(0,v)/nice)*ih; }
+  var o='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><defs>'+
+    '<linearGradient id="az" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6c35c" stop-opacity=".35"/><stop offset="1" stop-color="#e6c35c" stop-opacity="0"/></linearGradient>'+
+    '<linearGradient id="at" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd8a0" stop-opacity=".3"/><stop offset="1" stop-color="#7fd8a0" stop-opacity="0"/></linearGradient>'+
+    '<linearGradient id="aw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3d77a" stop-opacity=".22"/><stop offset="1" stop-color="#f3d77a" stop-opacity="0"/></linearGradient>'+
+    '<filter id="gl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  // сетка
+  for (var g=0; g<=4; g++){
+    var gv=nice*g/4, gy=Y(gv);
+    o+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'" stroke="rgba(212,175,55,'+(g?0.1:0.3)+')" stroke-width="1"/>';
+    o+='<text x="'+(L-6)+'" y="'+(gy+3.5)+'" text-anchor="end" font-size="9.5" fill="#a8987a" font-family="JetBrains Mono,monospace">'+short(gv)+'</text>';
+  }
+  // подписи оси X
+  var every=Math.ceil(n/7);
+  for (var i=0;i<n;i++) if (i%every===0 || (i===n-1 && (n-1)%every>=every/2))
+    o+='<text x="'+X(i)+'" y="'+(H-7)+'" text-anchor="middle" font-size="9.5" fill="#a8987a">'+labels[i]+'</text>';
+  // выбранная точка — вертикальная линия
+  if (d.sel>=0) o+='<line x1="'+X(d.sel)+'" x2="'+X(d.sel)+'" y1="'+T+'" y2="'+(T+ih)+'" stroke="rgba(255,243,207,.35)" stroke-width="1" stroke-dasharray="3 3"/>';
+  // линии и точки
+  ser.forEach(function(se){
+    var pts=[]; se.v.forEach(function(v,i){ if (se.p[i]) pts.push([X(i),Y(v),i]); });
+    if (!pts.length) return;
+    var line=pts.map(function(p,k){ return (k?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1); }).join(" ");
+    if (se.area && pts.length>1)
+      o+='<path d="'+line+' L'+pts[pts.length-1][0].toFixed(1)+' '+(T+ih)+' L'+pts[0][0].toFixed(1)+' '+(T+ih)+' Z" fill="url(#a'+se.id+')"/>';
+    if (pts.length>1)
+      o+='<path d="'+line+'" fill="none" stroke="'+se.c+'" stroke-width="'+(se.w||2.2)+'" stroke-linejoin="round" stroke-linecap="round" filter="url(#gl)"/>';
+    pts.forEach(function(p){
+      var on=p[2]===d.sel;
+      o+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(on?6:3.6)+'" fill="'+(on?se.c:"#0a0805")+'" stroke="'+se.c+'" stroke-width="2"/>';
+    });
+  });
+  // зоны нажатия
+  for (var j=0;j<n;j++){
+    var x0 = n>1 ? X(j)-step/2 : L, w = n>1 ? step : iw;
+    o+='<rect class="hit" data-i="'+j+'" x="'+x0+'" y="'+T+'" width="'+w+'" height="'+(ih+Bm)+'" fill="transparent"/>';
+  }
+  return o+'</svg>';
+}
+function pickPoint(i){
+  var d=chData, best=-1, bd=1e9;
+  d.pV.forEach(function(p,k){ if (p && Math.abs(k-i)<bd){ bd=Math.abs(k-i); best=k; } });
+  if (best<0) return;
+  d.sel=best;
+  document.getElementById("chart").innerHTML=svgChart();
+  var t=d.full[best]+": ";
+  if (chMode==="both") t+="зарплата <b>"+money(d.A[best])+"</b> + чаевые <b>"+money(d.B[best])+"</b> = <b>"+money(d.V[best])+"</b>";
+  else t+="<b>"+money(d.V[best])+"</b>";
+  document.getElementById("chInfo").innerHTML=t;
+  tick();
+}
+
+/* ---------- форма записи ---------- */
+var edit=null, fType="s", hrsVal=12;
+function isoDate(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function syncDateChips(){
+  var v=document.getElementById("fDate").value, t=new Date(), y=new Date(); y.setDate(y.getDate()-1);
+  [].forEach.call(document.querySelectorAll(".date-row .chip"),function(b){
+    b.classList.toggle("on", v===(b.dataset.dd==="0"?isoDate(t):isoDate(y)));
+  });
+}
+function hrsDefault(){ return document.getElementById("fHrsDef").checked; }
+function effHours(){ return hrsDefault() ? stdHours() : hrsVal; }
+function syncHrs(){
+  var sh=stdHours(), def=hrsDefault();
+  document.getElementById("fHrsDefTxt").innerHTML = sh ? "По умолчанию <b>"+fmtH(sh)+"</b> <small>"+S.start+"–"+S.end+"</small>"
+                                                       : "По умолчанию <small>(время смены не задано в ⚙️)</small>";
+  document.getElementById("hrsStep").style.display = def ? "none" : "";
+  document.getElementById("fHrsVal").textContent = fmtH(hrsVal);
+  updPreview();
+}
+function setType(t){
+  fType=t;
+  [].forEach.call(document.querySelectorAll("#typeSeg button"),function(b){ b.classList.toggle("on", b.dataset.t===t); });
+  document.getElementById("amtLbl").textContent=TYPES[t].amt;
+  document.getElementById("typeSeg").style.display = t==="t" ? "none" : "";
+  document.getElementById("tipWrap").style.display = (t==="s" && !edit) ? "" : "none";
+  document.getElementById("hrsWrap").style.display = t==="s" ? "" : "none";
+  updPreview();
+}
+function updPreview(){
+  var p=document.getElementById("preview"), v=num(document.getElementById("fAmt").value);
+  if (fType==="s"){ var t=tier(v); p.style.display="block";
+    var hv=effHours();
+    p.innerHTML="Заработок за эту смену: <b>"+money(t.pay)+"</b>"+(hv&&v>0?" · <b>"+perH(t.pay,hv)+"</b>":"")+
+      (v>0 ? "<br>До следующей ступени ("+money(t.nextPay)+"): ещё "+money(t.next-v)+" кассы" : ""); }
+  else p.style.display="none";
+}
+function openEntry(i){
+  today=new Date();
+  var key=mk(cur.y,cur.m);
+  edit = (i===undefined) ? null : {key:key, i:i};
+  var e = edit ? M[key][i] : null;
+  var newType = tab==="tips" ? "t" : "s";
+  document.getElementById("entryTitle").textContent = edit ? "Изменить запись" : (newType==="t" ? "Чаевые за смену" : "Новая запись");
+  document.getElementById("fDel").style.display = edit ? "" : "none";
+  var d;
+  if (e) d = cur.y+"-"+pad(cur.m)+"-"+pad(e[0]);
+  else {
+    var r=periodRange(), isCur = cur.y===today.getFullYear() && cur.m===today.getMonth()+1 &&
+      today.getDate()>=r[0] && today.getDate()<=r[1];
+    d = isCur ? today.getFullYear()+"-"+pad(today.getMonth()+1)+"-"+pad(today.getDate())
+              : cur.y+"-"+pad(cur.m)+"-"+pad(r[0]);
+  }
+  document.getElementById("fDate").value=d;
+  document.getElementById("fAmt").value = e ? String(e[2]).replace(".",",") : "";
+  document.getElementById("fCom").value = e ? (e[3]||"") : "";
+  document.getElementById("fTip").value = "";
+  var custom = !!(e && e[4]>0);
+  document.getElementById("fHrsDef").checked = !custom && (stdHours()>0 || !e);
+  hrsVal = custom ? e[4] : (stdHours() || 12);
+  document.getElementById("comWrap").style.display = (e && e[3]) ? "" : "none";
+  document.getElementById("comToggle").style.display = (e && e[3]) ? "none" : "";
+  syncHrs(); syncDateChips();
+  setType(e ? e[1] : newType);
+  document.getElementById("shEntry").classList.add("on");
+  document.querySelector("#shEntry .sheet").scrollTop=0;
+  if (!e) setTimeout(function(){ kpOpen(document.getElementById("fAmt")); }, 200);
+}
+function closeSheets(){ kpClose(); [].forEach.call(document.querySelectorAll(".shade"),function(s){ s.classList.remove("on"); }); }
+
+function saveEntry(){
+  if (!ready){ toast("Данные ещё загружаются…"); return; }
+  if (loadFailed){ toast("Нет связи с облаком Telegram — перезапусти приложение, чтобы не потерять записи"); return; }
+  kpClose();
+  var dv=document.getElementById("fDate").value, amt=num(document.getElementById("fAmt").value);
+  var com=document.getElementById("fCom").value.trim().slice(0,40);
+  if (!dv){ toast("Укажи дату"); return; }
+  if (amt<=0){ toast("Укажи сумму"); return; }
+  var p=dv.split("-"), y=+p[0], m=+p[1], day=+p[2], key=mk(y,m);
+  var hrs = (fType==="s" && !hrsDefault()) ? hrsVal : 0;
+  var rec=[day,fType,amt]; if (com || hrs>0) rec.push(com); if (hrs>0) rec.push(Math.round(hrs*100)/100);
+  var jobs=[];
+  if (edit){
+    if (edit.key===key){ M[key][edit.i]=rec; }
+    else { M[edit.key].splice(edit.i,1); jobs.push(saveMonth(edit.key)); (M[key]=M[key]||[]).push(rec); }
+  } else {
+    (M[key]=M[key]||[]).push(rec);
+    var tip=num(document.getElementById("fTip").value);
+    if (fType==="s" && tip>0) M[key].push([day,"t",tip]);
+  }
+  jobs.push(saveMonth(key));
+  // показать период, куда попала запись
+  cur.y=y; cur.m=m; cur.h = day<=15?1:2;
+  haptic("success");
+  closeSheets(); render();
+  Promise.all(jobs).then(function(){ toast(edit?"Изменено":"Сохранено"); });
+}
+function delEntry(){
+  if (!edit || !ready || loadFailed) return;
+  var b=document.getElementById("fDel");
+  if (!b.dataset.sure){ b.dataset.sure="1"; b.textContent="Точно?"; setTimeout(function(){ b.dataset.sure=""; b.textContent="🗑"; },2500); return; }
+  b.dataset.sure=""; b.textContent="🗑";
+  M[edit.key].splice(edit.i,1);
+  saveMonth(edit.key).then(function(){ toast("Удалено"); });
+  haptic("warning");
+  closeSheets(); render();
+}
+
+
+/* ---------- своя клавиатура ---------- */
+var kpEl=null;
+var KP_NAMES={fAmt:function(){ return TYPES[fType].amt.replace(", лей",""); }, fTip:function(){ return "Чаевые"; }};
+function kpShowVal(){
+  if (!kpEl) return;
+  var v=kpEl.value, n=num(v);
+  document.getElementById("kpName").textContent=KP_NAMES[kpEl.id]();
+  document.getElementById("kpVal").textContent = v ? (v.indexOf("+")>=0 ? "= "+money(n) : money(n)) : "";
+}
+function kpOpen(el){
+  if (kpEl===el) return;
+  if (kpEl) kpEl.classList.remove("active");
+  kpEl=el; el.classList.add("active");
+  var c=document.activeElement; if (c && c.blur && c!==document.body) c.blur();
+  document.getElementById("kp").style.display="";
+  document.getElementById("fBtns").style.display="none";
+  document.querySelector("#shEntry .sheet").classList.add("kp-on");
+  kpShowVal();
+  setTimeout(function(){ try { el.scrollIntoView({block:"nearest",behavior:"smooth"}); } catch(e){} }, 60);
+}
+function kpClose(){
+  if (!kpEl) return;
+  var v=kpEl.value;
+  if (v.indexOf("+")>=0 || /[,+]$/.test(v)){ var n=num(v); kpEl.value = n ? String(Math.round(n*100)/100).replace(".",",") : ""; }
+  kpEl.classList.remove("active"); kpEl=null;
+  document.getElementById("kp").style.display="none";
+  document.getElementById("fBtns").style.display="";
+  document.querySelector("#shEntry .sheet").classList.remove("kp-on");
+  updPreview();
+}
+function kpPress(k){
+  if (!kpEl) return;
+  if (k==="ok"){ kpClose(); tick(); return; }
+  var v=kpEl.value, parts=v.split("+"), last=parts[parts.length-1];
+  if (k==="del") v=v.slice(0,-1);
+  else if (k==="+"){ if (last!=="" && !/,$/.test(last) && parts.length<10) v+="+"; }
+  else if (k===","){ if (last.indexOf(",")<0) v += (last===""?"0,":","); }
+  else {
+    var dec=last.indexOf(",")>=0 ? last.split(",")[1] : null;
+    if (dec!==null && dec.length+k.length>2) return;
+    if (dec===null && last.replace(/^0+/,"").length+k.length>7) return;
+    if (last==="0" && dec===null) v=v.slice(0,-1);              // без ведущих нулей
+    if (k==="00" && (last==="" || last==="0")) k="0";
+    v+=k;
+  }
+  kpEl.value=v; kpShowVal(); updPreview(); tick();
+}
+
+/* ---------- настройки ---------- */
+var sPer="month";
+function updHrsBadge(){
+  var h=spanHours(document.getElementById("sStart").value, document.getElementById("sEnd").value);
+  document.getElementById("sHrs").textContent = h ? "Смена: "+fmtH(h) : "Укажи начало и конец смены";
+}
+function openSettings(){
+  document.getElementById("sStart").value=S.start||"";
+  document.getElementById("sEnd").value=S.end||"";
+  updHrsBadge();
+  setPer(S.period);
+  document.getElementById("shSet").classList.add("on");
+}
+function setPer(p){ sPer=p; [].forEach.call(document.querySelectorAll("#perSeg button"),function(b){ b.classList.toggle("on", b.dataset.p===p); }); }
+function saveSettings(){
+  if (!ready || loadFailed){ toast("Данные ещё не загрузились"); return; }
+  S.period=sPer;
+  S.start=document.getElementById("sStart").value||"";
+  S.end=document.getElementById("sEnd").value||"";
+  store.set("settings", JSON.stringify(S)).then(function(){ toast("Настройки сохранены"); });
+  closeSheets(); render();
+}
+
+/* ---------- мелочи ---------- */
+var tt;
+function toast(s){ var t=document.getElementById("toast"); t.textContent=s; t.classList.add("on"); clearTimeout(tt); tt=setTimeout(function(){ t.classList.remove("on"); },1800); }
+function haptic(k){ try { TG && TG.HapticFeedback && TG.HapticFeedback.notificationOccurred(k); } catch(e){} }
+
+/* ---------- события ---------- */
+document.getElementById("prev").onclick=function(){ move(-1); };
+document.getElementById("next").onclick=function(){ move(1); };
+document.getElementById("btnAdd").onclick=function(){ openEntry(); };
+document.getElementById("btnSettings").onclick=openSettings;
+document.getElementById("list").onclick=function(ev){ var b=ev.target.closest(".item"); if (b) openEntry(+b.dataset.i); };
+document.getElementById("typeSeg").onclick=function(ev){ var b=ev.target.closest("button"); if (b) setType(b.dataset.t); };
+document.getElementById("tabs").onclick=function(ev){ var b=ev.target.closest("button"); if (b && b.dataset.tab!==tab){ tab=b.dataset.tab; render(); } };
+document.getElementById("chMode").onclick=function(ev){ var b=ev.target.closest("button"); if (b){ chMode=b.dataset.c; renderTrend(); } };
+document.getElementById("chRange").onclick=function(ev){ var b=ev.target.closest("button"); if (b){ chRange=b.dataset.r; renderTrend(); } };
+document.getElementById("chart").onclick=function(ev){ var g=ev.target.closest(".hit"); if (g) pickPoint(+g.dataset.i); };
+document.getElementById("perSeg").onclick=function(ev){ var b=ev.target.closest("button"); if (b) setPer(b.dataset.p); };
+document.getElementById("fAmt").oninput=updPreview;
+[].forEach.call(document.querySelectorAll(".kpf"),function(el){
+  el.addEventListener("click",function(ev){ ev.preventDefault(); kpOpen(el); tick(); });
+  el.addEventListener("focus",function(){ el.blur(); kpOpen(el); });
+});
+document.querySelector(".kp-grid").addEventListener("click",function(ev){ var b=ev.target.closest("button"); if (b) kpPress(b.dataset.k); });
+document.getElementById("fCom").addEventListener("focus",kpClose);
+document.getElementById("typeSeg").addEventListener("click",function(){ kpShowVal(); });
+document.getElementById("fHrsDef").onchange=function(){ if (!hrsDefault() && !hrsVal) hrsVal=stdHours()||12; syncHrs(); tick(); };
+document.getElementById("hrsStep").onclick=function(ev){ var b=ev.target.closest("button"); if (!b) return;
+  hrsVal=Math.max(0.5,Math.min(24,Math.round((hrsVal+parseFloat(b.dataset.h))*2)/2)); syncHrs(); tick(); };
+document.querySelector(".date-row").onclick=function(ev){ var b=ev.target.closest(".chip"); if (!b) return;
+  var d=new Date(); d.setDate(d.getDate()-(+b.dataset.dd)); document.getElementById("fDate").value=isoDate(d); syncDateChips(); tick(); };
+document.getElementById("fDate").onchange=syncDateChips;
+document.getElementById("tipQuick").onclick=function(ev){ var b=ev.target.closest(".chip"); if (!b) return;
+  var el=document.getElementById("fTip"), a=+b.dataset.a; el.value = a ? String(Math.round((num(el.value)+a)*100)/100).replace(".",",") : ""; kpShowVal(); tick(); };
+document.getElementById("comToggle").onclick=function(){ this.style.display="none"; document.getElementById("comWrap").style.display="";
+  document.getElementById("fCom").focus(); };
+// Готово/Enter на клавиатуре — убрать клавиатуру
+[].forEach.call(document.querySelectorAll(".sheet input[type=text]:not(.kpf)"),function(el){
+  el.addEventListener("keydown",function(ev){ if (ev.key==="Enter"){ ev.preventDefault(); el.blur(); } });
+  el.addEventListener("focus",function(){ setTimeout(function(){ try { el.scrollIntoView({block:"center",behavior:"smooth"}); } catch(e){} }, 300); });
+});
+function tick(){ try { TG && TG.HapticFeedback && TG.HapticFeedback.selectionChanged(); } catch(e){} }
+document.getElementById("sStart").oninput=updHrsBadge;
+document.getElementById("sEnd").oninput=updHrsBadge;
+document.getElementById("fSave").onclick=saveEntry;
+document.getElementById("fDel").onclick=delEntry;
+document.getElementById("fCancel").onclick=closeSheets;
+document.getElementById("sSave").onclick=saveSettings;
+document.getElementById("sCancel").onclick=closeSheets;
+[].forEach.call(document.querySelectorAll(".shade"),function(s){ s.onclick=function(ev){ if (ev.target===s) closeSheets(); }; });
+
+/* ---------- загрузка ---------- */
+render();
+store.keys().then(function(keys){
+  keys = keys.filter(function(k){ return k==="settings" || /^m\d{4}_\d{2}$/.test(k); });
+  return store.getMany(keys);
+}).then(function(vals){
+  Object.keys(vals).forEach(function(k){
+    var v=vals[k]; if (!v) return;
+    try {
+      if (k==="settings") { var s=JSON.parse(v); S.period=s.period==="half"?"half":"month"; S.start=s.start||""; S.end=s.end||""; }
+      else { var arr=JSON.parse(v); if (Array.isArray(arr)) M[k.slice(1).replace("_","-")] = arr; else loadFailed=true; }
+    } catch(e){ loadFailed=true; }  // повреждённые данные не перезаписываем
+  });
+  ready=true;
+  if (loadFailed) toast("Не удалось загрузить часть данных — перезапусти приложение");
+  cur.h = today.getDate()<=15?1:2;
+  render();
+});
+})();
+</script>
+</body>
+</html>
